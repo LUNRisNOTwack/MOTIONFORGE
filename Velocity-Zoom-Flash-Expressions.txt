@@ -1,0 +1,44 @@
+VELOCITY ZOOM + FLASH  (CapCut-style)  -  Motion Forge
+The Transitions tab > Mixtape cards build all of this for you. This is the manual version.
+
+CURVE
+- Into the cut: 4th-power ramp (slow start, violent finish = the "sharp curve").
+- Out of the cut: cubed decay (fast then smoothly settling = "smooth deceleration").
+
+SETUP
+1. Put the playhead on the cut. Select both clips (the one ending and the one starting).
+2. Layer > New > Null Object. Name it "MF Velocity Rig". Set its Anchor Point and Position to the comp centre
+   (for 1920x1080: 960, 540). Parent both clips to it (pick whip in the Parent column).
+3. Effect > Expression Controls > Slider Control, added to the null 4 times, renamed exactly:
+   Cut Time = the cut in seconds (e.g. 10)   Ramp In = 0.2   Ramp Out = 0.47   Peak Scale = 190
+4. Alt-click (Option-click on Mac) the stopwatch next to the null's Scale. Paste EXPRESSION 1. Click away.
+5. Layer > New > Adjustment Layer. Effect > Color Correction > Exposure.
+   Alt-click the stopwatch next to Exposure. Paste EXPRESSION 2. Trim the adjustment layer to about 1 second around the cut.
+6. Optional: turn on Motion Blur (the switch on the clips and the comp's master switch).
+7. Graph Editor: select the null's Scale, press Shift+F3 to see the value curve (peak at the cut, sharp on the way in).
+
+EXPRESSION 1  (null > Scale)
+var c=effect("Cut Time")(1), a=effect("Ramp In")(1), b=effect("Ramp Out")(1);
+function env(t,c,a,b){
+ if(t<c-a) return 0;
+ if(t<c){ var u=(t-(c-a))/a; return u*u*u*u; }
+ if(t<c+b){ var w=1-(t-c)/b; return w*w*w; }
+ return 0;
+}
+var p=effect("Peak Scale")(1)/100, s=1+(p-1)*env(time,c,a,b);
+[value[0]*s, value[1]*s]
+
+EXPRESSION 2  (adjustment layer > Exposure)
+var n=thisComp.layer("MF Velocity Rig"); var c=n.effect("Cut Time")(1), a=n.effect("Ramp In")(1)*0.6, b=n.effect("Ramp Out")(1)*0.55, p=2.5;
+function env(t,c,a,b){
+ if(t<c-a) return 0;
+ if(t<c){ var u=(t-(c-a))/a; return u*u*u*u; }
+ if(t<c+b){ var w=1-(t-c)/b; return w*w*w; }
+ return 0;
+}
+p*env(time,c,a,b)
+// p = flash strength in stops (2.5 = bright, 1 = subtle)
+
+NOTES
+- If your null has a different name, change it in the first line of Expression 2.
+- Needs After Effects with the JavaScript expression engine (the default since CC 2015).
